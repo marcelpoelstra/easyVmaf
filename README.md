@@ -1,6 +1,7 @@
-# easyVmaf
+# Enhanced fork of easyVmaf (https://github.com/gdavila/easyVmaf.git)
 
 Python tool based on ffmpeg and ffprobe to deal with the video preprocesing required for VMAF inputs:
+
 * Deinterlacing
 * Upscaling/downscaling
 * Frame-to-Frame Syncing
@@ -12,37 +13,37 @@ Details about **How it Works** can be found [here](https://ottverse.com/vmaf-eas
 
 Since `easyVmaf` `2.0` only FFmpeg versions >= `5.0` will be supported. For using `easyVmaf` with FFmpeg < `5.0`, please consider rollingback to `easyVmaf` `1.3`.
 
+**This is an enhanced fork of the original version that introduces:**
+
+- Automatiic hardware accelerated decoding where available and applicable
+- Start script and symlink installer to make system-wide usage of single 'easyVmaf' command possible
+
 New feaures and updates:
 
-* [Cambi feature](https://github.com/Netflix/vmaf/blob/master/resource/doc/cambi.md#options) - Netflix banding detector, supported. 
-
+* [Cambi feature](https://github.com/Netflix/vmaf/blob/master/resource/doc/cambi.md#options) - Netflix banding detector, supported.
 * Command line ussage updated according to [libvmaf docs](https://ffmpeg.org/ffmpeg-filters.html#libvmaf)
-
 * [Cambi heatmap](https://github.com/Netflix/vmaf/issues/936) support added.  The outputs may be visualized with [ffplay](https://github.com/Netflix/vmaf/issues/1016#issuecomment-1099591977)
-
-* Built-in VMAF models are only supported since they are included in FFmpeg  >= `v5.0`. 
-
+* Built-in VMAF models are only supported since they are included in FFmpeg  >= `v5.0`.
 * Docker image - better handling of dependencies and built instruccions
-
-* 'HD Neg' and 'HD phone' models are computed by default 
+* 'HD Neg' and 'HD phone' models are computed by default
 
 ## Requirements
 
 * `Linux`/`OSX`
-
 * Python `>= v3.0`
-
 * Python module [ffmpeg_progress_yield](https://github.com/slhck/ffmpeg-progress-yield)
-
 * FFmpeg >= `5.0` build with `libvmaf`. More details [here](http://underpop.online.fr/f/ffmpeg/help/libvmaf.htm.gz)
 
 ## Installation
 
-* Just clone the repo and run it from the source folder.
+* Just clone the repo and run it from the source folder or anywhere in your local system
 
 ```bash
-$ git clone https://github.com/gdavila/easyVmaf.git
+$ git clone https://github.com/marcelpoelstra/easyVmaf_enhanced.git
 $ cd easyVmaf
+# optional, create symlink in local binary path to provide systemwide command of easyVmaf
+$ chmod +x easyVmaf.sh install_symlink.sh
+$ ./install_symlink.sh
 ```
 
 * Run from [docker image](https://hub.docker.com/repository/docker/gfdavila/easyvmaf). More info at the [end of this document](#Docker-Image-usage).
@@ -55,15 +56,15 @@ usage: easyVmaf [-h] -d D -r R [-sw SW] [-ss SS] [-fps FPS] [-subsample N] [-rev
                 [-threads THREADS] [-verbose] [-progress] [-endsync] [-output_fmt OUTPUT_FMT]
                 [-cambi_heatmap]
 
-Script to easy compute VMAF using FFmpeg. It allows to deinterlace, scale and sync Ref and Distorted video samples automatically:                         
+Script to easy compute VMAF using FFmpeg. It allows to deinterlace, scale and sync Ref and Distorted video samples automatically:                     
 
- 	 Autodeinterlace: If the Reference or Distorted samples are interlaced, deinterlacing is applied                        
+ 	 Autodeinterlace: If the Reference or Distorted samples are interlaced, deinterlacing is applied                    
 
- 	 Autoscale: Reference and Distorted samples are scaled automatically to 1920x1080 or 3840x2160 depending on the VMAF model to use                        
+ 	 Autoscale: Reference and Distorted samples are scaled automatically to 1920x1080 or 3840x2160 depending on the VMAF model to use                    
 
- 	 Autosync: The first frames of the distorted video are used as reference to a sync look up with the Reference video.                         
- 	 	 The sync is doing by a frame-by-frame look up of the best PSNR                        
- 	 	 See [-reverse] for more options of syncing                        
+ 	 Autosync: The first frames of the distorted video are used as reference to a sync look up with the Reference video.                     
+ 	 	 The sync is doing by a frame-by-frame look up of the best PSNR                    
+ 	 	 See [-reverse] for more options of syncing                    
 
  As output, a json file with VMAF score is created
 
@@ -100,7 +101,6 @@ VMAF computation for two video samples, `reference.ts` and `distorted-A.ts`. Bot
     ```bash
     $ python3 easyVmaf.py -d distorted-A.ts -r reference.ts -sw 2
 
-
     ...
     ...
     [Ignored outputs]
@@ -115,27 +115,16 @@ VMAF computation for two video samples, `reference.ts` and `distorted-A.ts`. Bot
 
 The previus command line takes a synchronisation window `sw` of *2 seconds* , this means that the sync lookup will be done between the first frame of `distorted-A.ts` (actually, in practise it takes into account several frames) and a subsample of `reference.ts` of *2 seconds* lenght since its begin.
 
-    ```bash
-    $ python3 easyVmaf.py -d distorted.ts -r reference.ts -sw 2
-    ...
-    ...
-    [Ignored FFmpeg outputs]
-    ...
-    ...
-    Sync Info:
-    offset:  0.7007000000000001 psnr:  48.863779
-    VMAF score:  89.37913542219542
-    VMAF json File Path:  distorted.json
-    ```
+    ``bash     $ python3 easyVmaf.py -d distorted.ts -r reference.ts -sw 2     ...     ...     [Ignored FFmpeg outputs]     ...     ...     Sync Info:     offset:  0.7007000000000001 psnr:  48.863779     VMAF score:  89.37913542219542     VMAF json File Path:  distorted.json     ``
 
 ### Syncing: Distorted Video delayed in regard with the first frame of Reference one.
+
 ![](readme/easyVmaf2.svg)
 
 This time,  `distorted-B.ts` is delayed in comparition with `reference.ts`, i.e.,  The first frame of `reference.ts` matchs with the frame located at 8.3003 seconds since the begining of `distorted-B.ts`. To sync the videos automatically, the next command line is used:
 
     ```bash
     $ python3 easyVmaf.py -d distorted-B.ts -r reference.ts -sw 3 -ss 6 -reverse
-
 
     ...
     ...
@@ -149,11 +138,9 @@ This time,  `distorted-B.ts` is delayed in comparition with `reference.ts`, i.e.
     VMAF json File Path:  distorted-B_vmaf.json
     ```
 
- The previous command line applies a syncronization window `sw` of *3 seconds*,  a *sync start time* `ss` *of 6 seconds* and the `reverse` flag.  
- 
+ The previous command line applies a syncronization window `sw` of *3 seconds*,  a *sync start time* `ss` *of 6 seconds* and the `reverse` flag.
+
 Note the use of the  `reverse`  flag (that was not used on the first example). This flag allows to interchange to which video the `syncWindow` will be applied (reference or distorted).
-
-
 
 ## Docker Image usage
 
