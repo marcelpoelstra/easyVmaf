@@ -42,8 +42,10 @@ New feaures and updates:
 $ git clone https://github.com/marcelpoelstra/easyVmaf_enhanced.git
 $ cd easyVmaf
 # optional, create symlink in local binary path to provide systemwide command of easyVmaf
-$ chmod +x easyVmaf.sh install_symlink.sh
+$ chmod +x easyVmaf.sh install_symlink.sh uninstall_symlink.sh
 $ ./install_symlink.sh
+# optional, remove the symlink to uninstall:
+$ ./uninstall_symlink.sh
 ```
 
 * Run from [docker image](https://hub.docker.com/repository/docker/gfdavila/easyvmaf). More info at the [end of this document](#Docker-Image-usage).
@@ -56,15 +58,15 @@ usage: easyVmaf [-h] -d D -r R [-sw SW] [-ss SS] [-fps FPS] [-subsample N] [-rev
                 [-threads THREADS] [-verbose] [-progress] [-endsync] [-output_fmt OUTPUT_FMT]
                 [-cambi_heatmap]
 
-Script to easy compute VMAF using FFmpeg. It allows to deinterlace, scale and sync Ref and Distorted video samples automatically:                     
+Script to easy compute VMAF using FFmpeg. It allows to deinterlace, scale and sync Ref and Distorted video samples automatically:                   
 
- 	 Autodeinterlace: If the Reference or Distorted samples are interlaced, deinterlacing is applied                    
+ 	 Autodeinterlace: If the Reference or Distorted samples are interlaced, deinterlacing is applied                  
 
- 	 Autoscale: Reference and Distorted samples are scaled automatically to 1920x1080 or 3840x2160 depending on the VMAF model to use                    
+ 	 Autoscale: Reference and Distorted samples are scaled automatically to 1920x1080 or 3840x2160 depending on the VMAF model to use                  
 
- 	 Autosync: The first frames of the distorted video are used as reference to a sync look up with the Reference video.                     
- 	 	 The sync is doing by a frame-by-frame look up of the best PSNR                    
- 	 	 See [-reverse] for more options of syncing                    
+ 	 Autosync: The first frames of the distorted video are used as reference to a sync look up with the Reference video.                   
+ 	 	 The sync is doing by a frame-by-frame look up of the best PSNR                  
+ 	 	 See [-reverse] for more options of syncing                  
 
  As output, a json file with VMAF score is created
 
